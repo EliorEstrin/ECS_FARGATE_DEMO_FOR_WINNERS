@@ -1,0 +1,22 @@
+
+services:
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: admin
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    ports:
+      - "5432:5432"
+
+  flask-app:
+    build:
+      context: ./Backend # Use Backend as the build context
+    environment:
+      DB_HOST: db
+      DB_NAME: admin
+      DB_USER: admin
+      DB_PASS: admin
+    ports:
+      - "5000:5000"
+

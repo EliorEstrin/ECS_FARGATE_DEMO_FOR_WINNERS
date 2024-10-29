@@ -1,13 +1,13 @@
 from flask import Flask, render_template_string
 import psycopg2  # Or another library if you're using a different database
+import os
 
 app = Flask(__name__)
 
-# Database configuration
-DB_HOST = "your_db_host"
-DB_NAME = "your_db_name"
-DB_USER = "your_db_user"
-DB_PASS = "your_db_password"
+DB_HOST = os.getenv("DB_HOST")
+DB_NAME = os.getenv("DB_NAME")
+DB_USER = os.getenv("DB_USER")
+DB_PASS = os.getenv("DB_PASS")
 
 # Template strings for the page
 SUCCESS_TEMPLATE = '''
@@ -57,5 +57,5 @@ def check_db_connection():
         return render_template_string(FAILURE_TEMPLATE)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", debug=True)
 
