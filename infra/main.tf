@@ -8,14 +8,26 @@ terraform {
 }
 
 provider "aws" {
-  region = "eu-central-1"
+  region = "us-east-1"
 }
 
 
-module "public_ecr" {
+module "public_ecr_app" {
   source = "terraform-aws-modules/ecr/aws"
 
   repository_name = "ecsdemo-flask"
+  repository_type = "public"
+
+  tags = {
+    Terraform   = "true"
+    Environment = "dev"
+  }
+}
+
+module "public_ecr_db" {
+  source = "terraform-aws-modules/ecr/aws"
+
+  repository_name = "ecsdemo-db"
   repository_type = "public"
 
   tags = {
