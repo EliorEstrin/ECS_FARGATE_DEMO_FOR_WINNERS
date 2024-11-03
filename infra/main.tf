@@ -11,6 +11,7 @@ provider "aws" {
   region = "us-east-1"
 }
 
+ 
 
 module "public_ecr_app" {
   source = "terraform-aws-modules/ecr/aws"
@@ -34,4 +35,9 @@ module "public_ecr_db" {
     Terraform   = "true"
     Environment = "dev"
   }
+}
+
+module "ecs" {
+  source = "terraform-aws-modules/ecs/aws"
+  cluster_name = "Qday-TF"
 }
