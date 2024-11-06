@@ -6,7 +6,7 @@ COPY . /app
 
 RUN pip install --no-cache-dir flask psycopg2-binary
 
-EXPOSE 5000
+EXPOSE 80
 
 CMD ["python", "app.py"]
 

@@ -4,3 +4,5 @@ infra/.terraform
 infra/.terraform.lock.hcl
 infra/terraform.tfstate.backup
 infra/terraform.tfstate
+infra/network/.terraform
+infra/network/.terraform.lock.hcl
