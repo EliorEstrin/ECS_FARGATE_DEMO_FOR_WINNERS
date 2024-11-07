@@ -9,6 +9,12 @@ module "public_ecr_app" {
 
 module "network" {
   source = "./network"
+  vpc_name            = "elior-vpc"
+  vpc_cidr            = "10.0.0.0/16"
+  azs                 = ["us-east-1a", "us-east-1b", "us-east-1c"]
+  public_subnet_cidrs = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
+  namespace_name      = "demo-namespace"
+  security_group_name = "shared-sg"
 }
 
 
