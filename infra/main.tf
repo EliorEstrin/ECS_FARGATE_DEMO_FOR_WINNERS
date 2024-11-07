@@ -93,6 +93,7 @@ module "ecs" {
       cpu    = 2048
       memory = 4096
 
+      enable_execute_command   = true
       subnet_ids = module.network.public_subnet_ids
 
       assign_public_ip      = "true"
