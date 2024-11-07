@@ -5,26 +5,7 @@ module "public_ecr_app" {
 
   repository_name = "ecsdemo-flask"
   repository_type = "public"
-
-  tags = {
-    Terraform   = "true"
-    Environment = "dev"
-  }
 }
-
-module "public_ecr_db" {
-  source = "terraform-aws-modules/ecr/aws"
-
-  repository_force_delete = true
-  repository_name         = "ecsdemo-db"
-  repository_type         = "public"
-
-  tags = {
-    Terraform   = "true"
-    Environment = "dev"
-  }
-}
-
 
 module "network" {
   source = "./network"
@@ -37,24 +18,27 @@ module "ecs" {
   cluster_name = "Qday-TF"
 
   services = {
-    app = {                                 # Define each service by name
-      cpu    = 2048
-      memory = 4096
+    app = {
+
+      assign_public_ip      = "true"
+      create_security_group = false
+      cpu                   = 2048
+      memory                = 4096
 
       subnet_ids = module.network.public_subnet_ids
 
-      enable_execute_command = true
+      enable_execute_command    = true
       tasks_iam_role_statements = local.task_exec_iam_statements
       task_exec_iam_statements  = local.task_exec_iam_statements
 
       container_definitions = [
         {
-          name                    = "app"
-          cpu                     = 1024
-          memory                  = 4096
-          essential               = true
-          image                   = "public.ecr.aws/f5g2i5c5/ecsdemo-flask:latest"
-          memory_reservation      = 2048
+          name                     = "app"
+          cpu                      = 1024
+          memory                   = 4096
+          essential                = true
+          image                    = "public.ecr.aws/f5g2i5c5/ecsdemo-flask:latest"
+          memory_reservation       = 2048
           readonly_root_filesystem = false
 
           port_mappings = [
@@ -73,7 +57,7 @@ module "ecs" {
           ]
 
           health_check = {
-            command      = ["CMD-SHELL", "curl -f http://localhost:80 || exit 1"]
+            command      = ["CMD-SHELL", "curl -f http://localhost/health || exit 1"]
             interval     = 10
             timeout      = 25
             retries      = 10
@@ -82,13 +66,8 @@ module "ecs" {
         }
       ]
 
-      skip_destroy = true
-
-      security_group_ids = [module.network.ecs_shared_sg_id, module.network.web_server_sg_id]
-
-      security_group_rules = [
-        local.allow_all_outbound
-      ]
+      skip_destroy       = true
+      security_group_ids = [module.network.server_sg_id]
 
       service_connect_configuration = {
         namespace = module.network.service_connect_namespace_name
@@ -102,8 +81,59 @@ module "ecs" {
         }
       }
     }
+
+
+    db = {
+      cpu    = 2048
+      memory = 4096
+
+      subnet_ids = module.network.public_subnet_ids
+
+      assign_public_ip      = "true"
+      tasks_iam_role_statements = local.task_exec_iam_statements
+      task_exec_iam_statements  = local.task_exec_iam_statements
+
+      container_definitions = {
+        postgres = {
+          cpu                      = 1024
+          memory                   = 1024
+          essential                = true
+          image                    = "postgres:13"
+          readonly_root_filesystem = false
+          enable_execute_command   = true
+          port_mappings = [
+            {
+              name          = "db"
+              containerPort = 5432
+              protocol      = "tcp"
+            }
+          ]
+
+          environment = [
+            { name = "POSTGRES_USER", value = "admin" },
+            { name = "POSTGRES_PASSWORD", value = "admin" },
+            { name = "POSTGRES_DB", value = "admin" }
+          ]
+        }
+      }
+      skip_destroy = false
+
+      service_connect_configuration = {
+        namespace = module.network.service_connect_namespace_name
+        service = {
+          client_alias = {
+            port     = 5432
+            dns_name = "db"
+          }
+          port_name      = "db"
+          discovery_name = "db"
+        }
+      }
+      security_group_ids = [module.network.server_sg_id]
+    }
   }
 }
+
 
 
 locals {
@@ -137,12 +167,4 @@ locals {
       resources = ["*"]
     }
   ]
-
-  allow_all_outbound = {
-    type        = "egress"      # Specifies outbound traffic
-    protocol    = "-1"          # -1 means all protocols
-    from_port   = 0             # All ports
-    to_port     = 0             # All ports
-    cidr_blocks = ["0.0.0.0/0"] # Allows traffic to all IPs
-  }
 }

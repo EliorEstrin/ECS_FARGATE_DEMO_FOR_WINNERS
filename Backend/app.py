@@ -104,6 +104,12 @@ def configure():
         return redirect(url_for("home"))  # Redirect to retry connection
     return render_template_string(CONFIG_TEMPLATE, DB_HOST=DB_HOST, DB_NAME=DB_NAME, DB_USER=DB_USER, DB_PASS=DB_PASS)
 
+@app.route("/health", methods=["GET"])
+def health_check():
+    success, _, _ = check_db_connection()
+    status = "healthy" if success else "unhealthy"
+    return jsonify({"status": status}), 200 if success else 503
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=80)
 
