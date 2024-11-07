@@ -62,13 +62,13 @@ module "ecs" {
             { name = "DB_PASS", value = "admin" }
           ]
 
-          health_check = {
-            command      = ["CMD-SHELL", "curl -f http://localhost/health || exit 1"]
-            interval     = 10
-            timeout      = 25
-            retries      = 10
-            start_period = 0
-          }
+          #health_check = {
+          #  command      = ["CMD-SHELL", "curl -f http://localhost/health || exit 1"]
+          #  interval     = 10
+          #  timeout      = 25
+          #  retries      = 10
+          #  start_period = 0
+          #}
         }
       ]
 
